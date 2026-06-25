@@ -606,7 +606,7 @@ async function runSearch() {
       document.getElementById("loading").style.display = "none";
       document.getElementById("results-content").style.display = "block";
       document.getElementById("r-title").textContent = "Ошибка поиска";
-      document.getElementById("r-labels").innerHTML = \`<span style="color:#E53935;font-size:12px">\${err.message}</span>\`;
+      document.getElementById("r-labels").innerHTML = '<span style="color:#E53935;font-size:12px">' + err.message + '</span>';
       document.getElementById("r-grid").style.display = "none";
       document.getElementById("r-empty").style.display = "block";
     }
