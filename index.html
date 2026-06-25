@@ -1,584 +1,809 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Поиск по фото — Halyk Market v2</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; }
+<!-- saved from url=(0044)file:///C:/Users/user/Downloads/index_1.html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    /* ─── Header ─── */
-    header { background: #fff; padding: 14px 24px; border-bottom: 1px solid #e0e0e0;
-             display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .header-left { display: flex; align-items: center; gap: 10px; }
-    header h1 { font-size: 20px; font-weight: 700; }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halyk Market — Поиск по фото</title>
+<script src="file:///C:/Users/user/Downloads/config.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ─── API status bar ─── */
-    #api-bar {
-      display: flex; align-items: center; gap: 10px; padding: 10px 24px;
-      font-size: 13px; font-weight: 500; transition: background .3s;
-    }
-    #api-bar.mock   { background: #fef9c3; color: #854d0e; }
-    #api-bar.ok     { background: #dcfce7; color: #166534; }
-    #api-bar.error  { background: #fee2e2; color: #991b1b; }
-    #api-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    #api-bar.mock  #api-dot { background: #eab308; }
-    #api-bar.ok    #api-dot { background: #22c55e; }
-    #api-bar.error #api-dot { background: #ef4444; }
-    #api-text { flex: 1; }
+:root {
+  --green:       #2AA65C;
+  --green-dark:  #1F8046;
+  --green-light: #EAF7EF;
+  --green-mid:   #B8E4CC;
+  --yellow:      #FFD100;
+  --yellow-dk:   #E6BC00;
+  --red:         #E53935;
+  --gray-50:     #F8F8F8;
+  --gray-100:    #F2F2F2;
+  --gray-200:    #E4E4E4;
+  --gray-400:    #ABABAB;
+  --gray-600:    #666666;
+  --gray-900:    #1A1A1A;
+  --white:       #FFFFFF;
+  --r:           8px;
+  --r-sm:        5px;
+  --shadow:      0 1px 6px rgba(0,0,0,0.08);
+  --shadow-hover:0 4px 18px rgba(42,166,92,0.14);
+}
 
-    /* ─── Configure button ─── */
-    .btn-config {
-      padding: 7px 16px; border: 1.5px solid #6366f1; border-radius: 8px;
-      background: transparent; color: #6366f1; font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: background .15s, color .15s; white-space: nowrap;
-    }
-    .btn-config:hover { background: #6366f1; color: #fff; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: var(--gray-100); color: var(--gray-900); font-size: 14px; }
 
-    /* ─── Modal ─── */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
-      z-index: 100; align-items: center; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: #fff; border-radius: 16px; padding: 28px 32px; width: 440px; max-width: 95vw;
-      box-shadow: 0 8px 40px rgba(0,0,0,.18);
-    }
-    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-    .modal p  { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
-    .modal label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
-    .modal input[type=url] {
-      width: 100%; padding: 10px 14px; border: 1.5px solid #d1d5db; border-radius: 8px;
-      font-size: 14px; outline: none; transition: border .2s;
-    }
-    .modal input[type=url]:focus { border-color: #6366f1; }
-    #modal-status { font-size: 13px; min-height: 20px; margin-top: 10px; }
-    #modal-status.ok    { color: #166534; }
-    #modal-status.error { color: #991b1b; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-    .btn-primary {
-      flex: 1; padding: 11px; background: #4f46e5; color: #fff; border: none; border-radius: 8px;
-      font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s;
-    }
-    .btn-primary:hover { background: #4338ca; }
-    .btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
-    .btn-secondary {
-      padding: 11px 18px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-    }
-    .btn-secondary:hover { background: #e5e7eb; }
+/* ── TOPBAR ─────────────────────────────────────────────── */
+.topbar { background: #1A1A1A; height: 32px; display: flex; align-items: center; justify-content: center; gap: 24px; }
+.topbar a { color: rgba(255,255,255,0.55); font-size: 11px; text-decoration: none; }
+.topbar a:hover { color: white; }
 
-    /* ─── Hero ─── */
-    .hero { text-align: center; padding: 40px 24px 20px; }
-    .hero h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
-    .hero p { color: #666; font-size: 15px; }
+/* ── HEADER ─────────────────────────────────────────────── */
+.header { background: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.12); position: sticky; top: 0; z-index: 100; }
+.header-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 58px; display: flex; align-items: center; gap: 14px; }
 
-    /* ─── Upload ─── */
-    .upload-area {
-      margin: 28px auto; max-width: 480px; background: #fff;
-      border: 2px dashed #ccc; border-radius: 16px; padding: 40px 24px;
-      text-align: center; cursor: pointer; transition: border-color .2s, background .2s;
-    }
-    .upload-area:hover, .upload-area.drag { border-color: #4f46e5; background: #f0f0ff; }
-    .upload-area input { display: none; }
-    .upload-icon { font-size: 48px; margin-bottom: 12px; }
-    .upload-area p { color: #666; font-size: 15px; margin-bottom: 4px; }
-    .upload-area small { color: #999; font-size: 13px; }
+.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; flex-shrink: 0; }
+.logo-badge { background: var(--yellow); width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+.logo-badge svg { width: 20px; height: 20px; }
+.logo-name { color: white; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; line-height: 1; }
+.logo-tag  { color: rgba(255,255,255,0.65); font-size: 10px; font-weight: 400; }
 
-    #preview-wrap { margin: 0 auto 16px; max-width: 480px; display: none; text-align: center; }
-    #preview-wrap img { max-height: 240px; border-radius: 12px; object-fit: cover; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+.header-catalog { background: rgba(0,0,0,0.18); color: white; border: none; border-radius: var(--r-sm); padding: 0 14px; height: 36px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; }
+.header-catalog:hover { background: rgba(0,0,0,0.28); }
+.header-catalog svg { width: 16px; height: 16px; }
 
-    /* ─── Search button ─── */
-    .btn-search {
-      display: block; margin: 0 auto; padding: 14px 40px;
-      background: #4f46e5; color: #fff; border: none; border-radius: 10px;
-      font-size: 16px; font-weight: 600; cursor: pointer; transition: background .2s;
-    }
-    .btn-search:hover { background: #4338ca; }
-    .btn-search:disabled { background: #a5b4fc; cursor: not-allowed; }
+.header-search { flex: 1; display: flex; height: 38px; border-radius: var(--r-sm); overflow: hidden; background: white; max-width: 560px; }
+.header-search input { flex: 1; border: none; outline: none; padding: 0 14px; font-size: 14px; color: var(--gray-900); min-width: 0; }
+.header-search input::placeholder { color: var(--gray-400); }
+.header-search-btn { background: var(--yellow); border: none; padding: 0 18px; cursor: pointer; display: flex; align-items: center; }
+.header-search-btn:hover { background: var(--yellow-dk); }
+.header-search-btn svg { width: 18px; height: 18px; color: var(--gray-900); }
 
-    #status { text-align: center; margin: 14px; color: #666; font-size: 14px; min-height: 20px; }
+.header-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }
+.haction { display: flex; flex-direction: column; align-items: center; gap: 2px; color: white; text-decoration: none; background: none; border: none; cursor: pointer; padding: 4px 10px; border-radius: var(--r-sm); opacity: 0.88; }
+.haction:hover { opacity: 1; background: rgba(255,255,255,0.12); }
+.haction svg { width: 20px; height: 20px; }
+.haction span { font-size: 10px; }
 
-    /* ─── Labels ─── */
-    #labels-section { max-width: 700px; margin: 0 auto 8px; padding: 0 16px; }
-    #labels-title { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag { background: #ede9fe; color: #4f46e5; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 500; }
-    .tag.mock { background: #fef9c3; color: #854d0e; }
+/* ── NAV ─────────────────────────────────────────────────── */
+.subnav { background: white; border-bottom: 1px solid var(--gray-200); }
+.subnav-inner { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 0; overflow-x: auto; scrollbar-width: none; }
+.subnav-inner::-webkit-scrollbar { display: none; }
+.subnav a { color: var(--gray-600); font-size: 13px; text-decoration: none; padding: 10px 14px; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.15s; }
+.subnav a:hover { color: var(--green); }
+.subnav a.active { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
 
-    /* ─── Grid ─── */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;
-            max-width: 960px; margin: 16px auto 48px; padding: 0 16px; }
-    .card { background: #fff; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 1px 6px rgba(0,0,0,.08); transition: transform .15s; }
-    .card:hover { transform: translateY(-3px); }
-    .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f0f0f0; }
-    .card-body { padding: 12px; }
-    .card-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
-    .card-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
-    .card-price { font-size: 16px; font-weight: 700; color: #4f46e5; }
-    .badge-out { font-size: 11px; background: #fee2e2; color: #dc2626; border-radius: 6px; padding: 2px 6px; margin-left: 6px; }
-    .badge-new { font-size: 11px; background: #dcfce7; color: #166534; border-radius: 6px; padding: 2px 6px; margin-left: 4px; }
+/* ── MAIN ─────────────────────────────────────────────────── */
+.main { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-    #empty { text-align: center; padding: 40px; display: none; }
-    #empty .emoji { font-size: 48px; }
-    #empty p { color: #666; margin-top: 12px; }
-  </style>
+/* ── API STATUS ──────────────────────────────────────────── */
+.api-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r-sm); font-size: 12px; margin-bottom: 16px; border: 1px solid; }
+.api-bar.mock  { background: #FFF8E1; border-color: var(--yellow); color: #7A5E00; }
+.api-bar.live  { background: var(--green-light); border-color: var(--green-mid); color: var(--green-dark); }
+.api-bar svg   { width: 15px; height: 15px; flex-shrink: 0; }
+.api-bar strong { font-weight: 600; }
+
+/* ── HERO SECTION ────────────────────────────────────────── */
+.hero { background: white; border-radius: var(--r); overflow: hidden; display: flex; margin-bottom: 20px; box-shadow: var(--shadow); }
+.hero-visual { width: 340px; flex-shrink: 0; background: linear-gradient(135deg, #1F8046 0%, #2AA65C 60%, #3EC876 100%); padding: 36px 32px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.hero-visual::after { content: ''; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,0.07); }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.15); color: white; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; width: fit-content; letter-spacing: 0.3px; text-transform: uppercase; }
+.hero-eyebrow svg { width: 12px; height: 12px; }
+.hero-title { color: white; font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -0.5px; margin: 16px 0 10px; }
+.hero-title em { font-style: normal; color: var(--yellow); }
+.hero-sub { color: rgba(255,255,255,0.75); font-size: 13px; line-height: 1.55; }
+.hero-steps-v { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+.hero-step { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.9); font-size: 12px; }
+.hero-step-dot { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+
+.hero-upload { flex: 1; padding: 32px; display: flex; flex-direction: column; justify-content: center; }
+.dropzone { border: 2px dashed var(--green-mid); border-radius: var(--r); padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.18s; background: var(--green-light); }
+.dropzone:hover, .dropzone.drag { border-color: var(--green); background: #D8F2E5; }
+.dz-icon { width: 56px; height: 56px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 2px 12px rgba(42,166,92,0.15); }
+.dz-icon svg { width: 26px; height: 26px; color: var(--green); }
+.dz-title { font-size: 15px; font-weight: 600; color: var(--gray-900); margin-bottom: 5px; }
+.dz-sub   { font-size: 12px; color: var(--gray-600); margin-bottom: 16px; }
+.dz-hint  { font-size: 11px; color: var(--gray-400); margin-top: 10px; }
+input[type=file] { display: none; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: var(--r-sm); cursor: pointer; font-size: 13px; font-weight: 600; padding: 9px 18px; transition: all 0.15s; }
+.btn-green  { background: var(--green); color: white; }
+.btn-green:hover { background: var(--green-dark); }
+.btn-green:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-yellow { background: var(--yellow); color: var(--gray-900); }
+.btn-yellow:hover { background: var(--yellow-dk); }
+.btn svg { width: 15px; height: 15px; }
+.btn-full { width: 100%; justify-content: center; margin-top: 12px; }
+
+/* preview */
+.preview-wrap { display: none; position: relative; }
+.preview-img  { width: 100%; max-height: 190px; object-fit: cover; border-radius: var(--r-sm); }
+.preview-rm   { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.55); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+
+/* ── CATEGORIES ROW ──────────────────────────────────────── */
+.section-label { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.section-label span { font-size: 12px; color: var(--gray-400); font-weight: 400; }
+
+.cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.cat { background: white; border: 1px solid var(--gray-200); border-radius: 20px; padding: 6px 14px; font-size: 12px; color: var(--gray-600); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 5px; box-shadow: var(--shadow); }
+.cat:hover { border-color: var(--green); color: var(--green); }
+.cat.on    { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 500; }
+
+/* ── PRODUCT GRID ────────────────────────────────────────── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 12px; }
+.card { background: white; border-radius: var(--r); border: 1px solid var(--gray-200); overflow: hidden; cursor: pointer; transition: all 0.18s; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.card:hover { border-color: var(--green); box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.card-img  { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--gray-50); padding: 10px; }
+.card-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; }
+.card-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; margin-bottom: 5px; }
+.badge-sale { background: #FFEBEE; color: var(--red); }
+.badge-new  { background: var(--green-light); color: var(--green-dark); }
+.card-name  { font-size: 12px; color: var(--gray-900); line-height: 1.45; margin-bottom: auto; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-price { margin-top: 8px; }
+.card-old   { font-size: 11px; color: var(--gray-400); text-decoration: line-through; }
+.card-cur   { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+.card-installment { font-size: 10px; color: var(--gray-600); margin-top: 2px; }
+.card-rate  { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+.card-rate svg { width: 11px; height: 11px; fill: var(--yellow-dk); color: var(--yellow-dk); }
+.card-add   { width: 100%; margin-top: 8px; font-size: 12px; padding: 7px; }
+
+/* ── LOADING ─────────────────────────────────────────────── */
+.loading { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 64px 20px; gap: 14px; }
+.spinner { width: 38px; height: 38px; border: 3px solid var(--green-mid); border-top-color: var(--green); border-radius: 50%; animation: spin 0.75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-t { font-size: 14px; color: var(--gray-900); font-weight: 500; }
+.loading-s { font-size: 12px; color: var(--gray-400); }
+
+/* ── RESULTS ─────────────────────────────────────────────── */
+#results-area { display: none; }
+#results-area.on { display: block; }
+
+.results-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.results-head h2 { font-size: 16px; font-weight: 700; }
+.label-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.label-chip { background: var(--yellow); color: var(--gray-900); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 3px; }
+
+.empty { text-align: center; padding: 64px 20px; display: none; }
+.empty svg { width: 52px; height: 52px; color: var(--gray-200); margin-bottom: 12px; }
+.empty h3  { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+.empty p   { font-size: 13px; color: var(--gray-400); }
+
+/* ── BANNER ──────────────────────────────────────────────── */
+.banner { background: linear-gradient(90deg, #1F8046, #2AA65C); border-radius: var(--r); padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.banner-text { color: white; }
+.banner-text h3 { font-size: 15px; font-weight: 700; }
+.banner-text p  { font-size: 12px; opacity: 0.8; margin-top: 3px; }
+.banner-badge { background: var(--yellow); color: var(--gray-900); font-size: 13px; font-weight: 700; padding: 8px 16px; border-radius: var(--r-sm); white-space: nowrap; }
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+.footer { background: #1A1A1A; margin-top: 48px; padding: 28px 20px; }
+.footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.footer-logo { color: white; font-size: 16px; font-weight: 700; }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { color: rgba(255,255,255,0.45); font-size: 12px; text-decoration: none; }
+.footer-links a:hover { color: rgba(255,255,255,0.8); }
+.footer-copy { color: rgba(255,255,255,0.3); font-size: 11px; }
+
+@media (max-width: 720px) {
+  .hero { flex-direction: column; }
+  .hero-visual { width: 100%; padding: 24px 20px; }
+  .hero-upload  { padding: 20px; }
+  .topbar, .subnav, .header-actions { display: none; }
+  .header-inner { gap: 10px; }
+}
+</style>
 </head>
 <body>
 
-<!-- ═══ MODAL ═══ -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <h2>⚙️ Настроить API</h2>
-    <p>Введите URL вашего бэкенда (Render / Railway / localhost). После сохранения будет выполнена проверка соединения.</p>
-    <label for="api-url-input">URL бэкенда</label>
-    <input type="url" id="api-url-input" placeholder="https://halyk-image-search.onrender.com" />
-    <div id="modal-status"></div>
-    <div class="modal-actions">
-      <button class="btn-primary" id="modal-save-btn">Сохранить и проверить</button>
-      <button class="btn-secondary" id="modal-close-btn">Отмена</button>
-    </div>
-  </div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="file:///C:/Users/user/Downloads/index_1.html#">Halyk Bank</a>
+  <a href="file:///C:/Users/user/Downloads/index_1.html#">Homebank</a>
+  <a href="file:///C:/Users/user/Downloads/index_1.html#">Помощь</a>
+  <a href="file:///C:/Users/user/Downloads/index_1.html#">77111</a>
 </div>
 
-<!-- ═══ HEADER ═══ -->
-<header>
-  <div class="header-left">
-    <span style="font-size:24px">🔍</span>
-    <h1>Поиск товаров по фото</h1>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <a class="logo" href="file:///C:/Users/user/Downloads/index_1.html#">
+      <div class="logo-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#1F8046" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+      </div>
+      <div><div class="logo-name">Halyk Market</div><div class="logo-tag">halykmarket.kz</div></div>
+    </a>
+    <button class="header-catalog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      Каталог
+    </button>
+    <div class="header-search">
+      <input type="text" placeholder="Поиск товаров..." id="txt-input">
+      <button class="header-search-btn" onclick="handleTextSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+      </button>
+    </div>
+    <div class="header-actions">
+      <a class="haction" href="file:///C:/Users/user/Downloads/index_1.html#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg><span>Избранное</span></a>
+      <a class="haction" href="file:///C:/Users/user/Downloads/index_1.html#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span>Корзина</span></a>
+      <a class="haction" href="file:///C:/Users/user/Downloads/index_1.html#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Войти</span></a>
+    </div>
   </div>
-  <button class="btn-config" id="open-modal-btn">⚙️ Настроить API</button>
 </header>
 
-<!-- ═══ API STATUS BAR ═══ -->
-<div id="api-bar" class="mock">
-  <div id="api-dot"></div>
-  <span id="api-text">Мок-режим: бэкенд не подключён. Поиск работает по имени файла.</span>
-</div>
+<!-- SUBNAV -->
+<nav class="subnav">
+  <div class="subnav-inner">
+    <a href="file:///C:/Users/user/Downloads/index_1.html#" class="active">Поиск по фото</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Электроника</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Смартфоны</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Ноутбуки</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Одежда и обувь</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Дом и сад</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Рассрочка 0-0-24</a>
+    <a href="file:///C:/Users/user/Downloads/index_1.html#">Скидки</a>
+  </div>
+</nav>
 
-<!-- ═══ HERO ═══ -->
-<div class="hero">
-  <h2>Сфотографируй — найди</h2>
-  <p>Загрузите фото товара и мы найдём похожее в каталоге</p>
-</div>
+<main class="main">
 
-<!-- ═══ UPLOAD ═══ -->
-<div class="upload-area" id="dropzone">
-  <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" />
-  <div class="upload-icon">📷</div>
-  <p>Нажмите или перетащите фото сюда</p>
-  <small>JPG, PNG, WEBP · до 10 МБ</small>
-</div>
+  <!-- API STATUS -->
+  <div class="api-bar mock" id="api-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span id="api-bar-text"><strong>Мок-режим.</strong> Бэкенд не настроен в config.js — поиск работает без реального Google Vision API.</span>
+  </div>
 
-<div id="preview-wrap"><img id="preview" src="" alt="preview" /></div>
-
-<button class="btn-search" id="search-btn" disabled>Найти товары</button>
-<div id="status"></div>
-
-<div id="labels-section" style="display:none">
-  <div id="labels-title"></div>
-  <div class="tags" id="tags"></div>
-</div>
-
-<div class="grid" id="grid"></div>
-<div id="empty">
-  <div class="emoji">🤷</div>
-  <p id="empty-msg">По этому фото ничего не найдено.<br>Попробуйте другое изображение.</p>
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════
-// MOCK CATALOG — 100 SKU
-// ═══════════════════════════════════════════════════════
-const PRODUCTS = [
-  // Смартфоны
-  { id:1, name:"Samsung Galaxy S24 Ultra 256GB", brand:"Samsung", category:"смартфон", keywords:["смартфон","телефон","samsung"], price:479990, in_stock:true, image_url:"https://placehold.co/400x400/1a1a2e/ffffff?text=Galaxy+S24" },
-  { id:2, name:"Apple iPhone 15 Pro 128GB", brand:"Apple", category:"смартфон", keywords:["смартфон","телефон","apple","iphone","айфон"], price:549990, in_stock:true, image_url:"https://placehold.co/400x400/1c1c1e/ffffff?text=iPhone+15+Pro" },
-  { id:3, name:"Xiaomi Redmi Note 13 Pro 8/256GB", brand:"Xiaomi", category:"смартфон", keywords:["смартфон","телефон","xiaomi"], price:189990, in_stock:true, image_url:"https://placehold.co/400x400/ff6900/ffffff?text=Redmi+Note+13" },
-  { id:4, name:"Samsung Galaxy A55 5G 8/256GB", brand:"Samsung", category:"смартфон", keywords:["смартфон","телефон","samsung"], price:229990, in_stock:true, image_url:"https://placehold.co/400x400/0d47a1/ffffff?text=Galaxy+A55" },
-  { id:5, name:"Apple iPhone 14 128GB", brand:"Apple", category:"смартфон", keywords:["смартфон","телефон","apple","iphone","айфон"], price:389990, in_stock:false, image_url:"https://placehold.co/400x400/2c2c2e/ffffff?text=iPhone+14" },
-  { id:6, name:"Xiaomi 14 Ultra 16/512GB", brand:"Xiaomi", category:"смартфон", keywords:["смартфон","телефон","xiaomi"], price:399990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Xiaomi+14+Ultra" },
-  { id:7, name:"Samsung Galaxy Z Flip 5 256GB", brand:"Samsung", category:"смартфон", keywords:["смартфон","телефон","samsung"], price:419990, in_stock:true, image_url:"https://placehold.co/400x400/6a1b9a/ffffff?text=Z+Flip5" },
-  { id:8, name:"Honor 90 Pro 12/512GB", brand:"Honor", category:"смартфон", keywords:["смартфон","телефон"], price:219990, in_stock:true, image_url:"https://placehold.co/400x400/004d40/ffffff?text=Honor+90+Pro" },
-
-  // Наушники / аудио
-  { id:9, name:"Apple AirPods Pro 2-го поколения", brand:"Apple", category:"наушники", keywords:["наушники","tws","беспроводные","apple"], price:129990, in_stock:true, image_url:"https://placehold.co/400x400/f5f5f7/333333?text=AirPods+Pro" },
-  { id:10, name:"Samsung Galaxy Buds2 Pro", brand:"Samsung", category:"наушники", keywords:["наушники","tws","беспроводные","samsung"], price:89990, in_stock:true, image_url:"https://placehold.co/400x400/2979ff/ffffff?text=Buds2+Pro" },
-  { id:11, name:"Sony WH-1000XM5", brand:"Sony", category:"наушники", keywords:["наушники","аудио","sony"], price:149990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=WH-1000XM5" },
-  { id:12, name:"JBL Tune 770NC", brand:"JBL", category:"наушники", keywords:["наушники","аудио"], price:39990, in_stock:true, image_url:"https://placehold.co/400x400/ffca28/333333?text=JBL+Tune+770" },
-  { id:13, name:"Xiaomi Redmi Buds 5 Pro", brand:"Xiaomi", category:"наушники", keywords:["наушники","tws","беспроводные","xiaomi"], price:29990, in_stock:true, image_url:"https://placehold.co/400x400/e53935/ffffff?text=Redmi+Buds+5" },
-  { id:14, name:"Beats Studio Pro", brand:"Beats", category:"наушники", keywords:["наушники","аудио"], price:119990, in_stock:false, image_url:"https://placehold.co/400x400/b71c1c/ffffff?text=Beats+Studio+Pro" },
-  { id:15, name:"JBL Charge 5 (колонка)", brand:"JBL", category:"колонка", keywords:["колонка","аудио"], price:59990, in_stock:true, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=JBL+Charge+5" },
-  { id:16, name:"Xiaomi Smart Speaker Pro", brand:"Xiaomi", category:"колонка", keywords:["колонка","аудио","xiaomi"], price:34990, in_stock:true, image_url:"https://placehold.co/400x400/37474f/ffffff?text=Mi+Speaker+Pro" },
-
-  // Ноутбуки
-  { id:17, name:"Apple MacBook Air 15 M3 8/256GB", brand:"Apple", category:"ноутбук", keywords:["ноутбук","компьютер","apple"], price:699990, in_stock:true, image_url:"https://placehold.co/400x400/8e8e93/ffffff?text=MacBook+Air+M3" },
-  { id:18, name:"Asus VivoBook 15 i5-13/16/512GB", brand:"Asus", category:"ноутбук", keywords:["ноутбук","компьютер"], price:289990, in_stock:true, image_url:"https://placehold.co/400x400/1b5e20/ffffff?text=VivoBook+15" },
-  { id:19, name:"Lenovo IdeaPad Slim 5 Ryzen 7/16/512GB", brand:"Lenovo", category:"ноутбук", keywords:["ноутбук","компьютер"], price:319990, in_stock:true, image_url:"https://placehold.co/400x400/0d47a1/ffffff?text=IdeaPad+Slim+5" },
-  { id:20, name:"HP Pavilion 15 i5-12/8/512GB", brand:"HP", category:"ноутбук", keywords:["ноутбук","компьютер"], price:249990, in_stock:false, image_url:"https://placehold.co/400x400/0288d1/ffffff?text=HP+Pavilion+15" },
-  { id:21, name:"Samsung Galaxy Book4 Pro 360", brand:"Samsung", category:"ноутбук", keywords:["ноутбук","компьютер","samsung"], price:549990, in_stock:true, image_url:"https://placehold.co/400x400/1a237e/ffffff?text=Galaxy+Book4+Pro" },
-  { id:22, name:"Acer Swift Go 14 i7/16/512GB OLED", brand:"Acer", category:"ноутбук", keywords:["ноутбук","компьютер"], price:349990, in_stock:true, image_url:"https://placehold.co/400x400/880e4f/ffffff?text=Swift+Go+14" },
-
-  // Планшеты
-  { id:23, name:"Apple iPad Pro 12.9\" M2 256GB WiFi", brand:"Apple", category:"планшет", keywords:["планшет","ipad","apple"], price:529990, in_stock:true, image_url:"https://placehold.co/400x400/636366/ffffff?text=iPad+Pro+12.9" },
-  { id:24, name:"Samsung Galaxy Tab S9 FE 10.9\" 6/128GB", brand:"Samsung", category:"планшет", keywords:["планшет","samsung"], price:189990, in_stock:true, image_url:"https://placehold.co/400x400/01579b/ffffff?text=Tab+S9+FE" },
-  { id:25, name:"Xiaomi Pad 6 Pro 8/256GB", brand:"Xiaomi", category:"планшет", keywords:["планшет","xiaomi"], price:229990, in_stock:true, image_url:"https://placehold.co/400x400/33691e/ffffff?text=Xiaomi+Pad+6+Pro" },
-  { id:26, name:"Lenovo Tab P12 Pro 8/256GB", brand:"Lenovo", category:"планшет", keywords:["планшет"], price:179990, in_stock:false, image_url:"https://placehold.co/400x400/4a148c/ffffff?text=Tab+P12+Pro" },
-
-  // Умные часы
-  { id:27, name:"Apple Watch Series 9 45mm", brand:"Apple", category:"часы", keywords:["часы","умные часы","apple"], price:199990, in_stock:true, image_url:"https://placehold.co/400x400/1c1c1e/ffffff?text=Watch+S9" },
-  { id:28, name:"Samsung Galaxy Watch 6 Classic 47mm", brand:"Samsung", category:"часы", keywords:["часы","умные часы","samsung"], price:149990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Galaxy+Watch+6" },
-  { id:29, name:"Xiaomi Watch S3 AMOLED", brand:"Xiaomi", category:"часы", keywords:["часы","умные часы","xiaomi"], price:49990, in_stock:true, image_url:"https://placehold.co/400x400/263238/ffffff?text=Xiaomi+Watch+S3" },
-  { id:30, name:"Garmin Forerunner 265", brand:"Garmin", category:"часы", keywords:["часы","умные часы","беговые"], price:179990, in_stock:true, image_url:"https://placehold.co/400x400/1b5e20/ffffff?text=Forerunner+265" },
-  { id:31, name:"Huawei Watch GT 4 46mm", brand:"Huawei", category:"часы", keywords:["часы","умные часы"], price:99990, in_stock:true, image_url:"https://placehold.co/400x400/bf360c/ffffff?text=Watch+GT+4" },
-
-  // Телевизоры
-  { id:32, name:"Samsung 65\" QLED 4K Q70C (2023)", brand:"Samsung", category:"телевизор", keywords:["телевизор","монитор","samsung"], price:449990, in_stock:true, image_url:"https://placehold.co/400x400/0d47a1/ffffff?text=Samsung+65+QLED" },
-  { id:33, name:"LG 55\" OLED evo C3 4K", brand:"LG", category:"телевизор", keywords:["телевизор","монитор","lg"], price:579990, in_stock:true, image_url:"https://placehold.co/400x400/b71c1c/ffffff?text=LG+OLED+C3" },
-  { id:34, name:"Xiaomi TV A2 43\" Full HD", brand:"Xiaomi", category:"телевизор", keywords:["телевизор","xiaomi"], price:89990, in_stock:true, image_url:"https://placehold.co/400x400/e64a19/ffffff?text=Xiaomi+TV+A2" },
-  { id:35, name:"Hisense 50\" U6K Mini LED 4K", brand:"Hisense", category:"телевизор", keywords:["телевизор","монитор"], price:199990, in_stock:true, image_url:"https://placehold.co/400x400/00695c/ffffff?text=Hisense+50+U6K" },
-  { id:36, name:"Sony BRAVIA 65\" X90L 4K", brand:"Sony", category:"телевизор", keywords:["телевизор","sony"], price:529990, in_stock:false, image_url:"https://placehold.co/400x400/1a237e/ffffff?text=Sony+X90L" },
-
-  // Кроссовки / обувь
-  { id:37, name:"Nike Air Max 270 React", brand:"Nike", category:"кроссовки", keywords:["кроссовки","обувь","nike","спортивная обувь"], price:59990, in_stock:true, image_url:"https://placehold.co/400x400/e53935/ffffff?text=Air+Max+270" },
-  { id:38, name:"Adidas Ultraboost 23 Men", brand:"Adidas", category:"кроссовки", keywords:["кроссовки","обувь","adidas","беговые"], price:79990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Ultraboost+23" },
-  { id:39, name:"Nike Dunk Low Retro White Black", brand:"Nike", category:"кроссовки", keywords:["кроссовки","кеды","обувь","nike"], price:54990, in_stock:true, image_url:"https://placehold.co/400x400/f5f5f5/333333?text=Dunk+Low" },
-  { id:40, name:"Adidas Stan Smith Cloud White", brand:"Adidas", category:"кроссовки", keywords:["кроссовки","кеды","обувь","adidas"], price:44990, in_stock:true, image_url:"https://placehold.co/400x400/e8f5e9/333333?text=Stan+Smith" },
-  { id:41, name:"New Balance 574 Men Classic", brand:"New Balance", category:"кроссовки", keywords:["кроссовки","обувь","спортивная обувь"], price:39990, in_stock:true, image_url:"https://placehold.co/400x400/607d8b/ffffff?text=NB+574" },
-  { id:42, name:"Puma Suede Classic XXI", brand:"Puma", category:"кроссовки", keywords:["кроссовки","кеды","обувь"], price:34990, in_stock:false, image_url:"https://placehold.co/400x400/4a148c/ffffff?text=Puma+Suede" },
-  { id:43, name:"Nike Air Force 1 '07 White", brand:"Nike", category:"кроссовки", keywords:["кроссовки","кеды","обувь","nike"], price:49990, in_stock:true, image_url:"https://placehold.co/400x400/fafafa/333333?text=Air+Force+1" },
-  { id:44, name:"Ботинки Dr.Martens 1460 Black", brand:"Dr.Martens", category:"ботинки", keywords:["ботинки","обувь"], price:89990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Dr.Martens+1460" },
-  { id:45, name:"UGG Classic Short Boot Chestnut", brand:"UGG", category:"ботинки", keywords:["ботинки","обувь"], price:79990, in_stock:true, image_url:"https://placehold.co/400x400/8d6e63/ffffff?text=UGG+Classic+Short" },
-
-  // Куртки / одежда
-  { id:46, name:"The North Face Puffer Jacket 700", brand:"The North Face", category:"куртка", keywords:["куртка","пуховик","одежда"], price:129990, in_stock:true, image_url:"https://placehold.co/400x400/1b5e20/ffffff?text=TNF+Puffer" },
-  { id:47, name:"Moncler Grenoble Down Jacket", brand:"Moncler", category:"куртка", keywords:["куртка","пуховик","одежда"], price:399990, in_stock:true, image_url:"https://placehold.co/400x400/b71c1c/ffffff?text=Moncler+Down" },
-  { id:48, name:"Adidas Windbreaker Jacket", brand:"Adidas", category:"куртка", keywords:["куртка","одежда","adidas"], price:49990, in_stock:true, image_url:"https://placehold.co/400x400/0d47a1/ffffff?text=Adidas+Windbreaker" },
-  { id:49, name:"Nike Tech Fleece Hoodie", brand:"Nike", category:"одежда", keywords:["одежда","nike"], price:44990, in_stock:true, image_url:"https://placehold.co/400x400/37474f/ffffff?text=Tech+Fleece" },
-  { id:50, name:"Levis 501 Original Fit Jeans", brand:"Levis", category:"одежда", keywords:["джинсы","одежда"], price:34990, in_stock:true, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=Levis+501" },
-  { id:51, name:"Pальто Max Mara Camel", brand:"Max Mara", category:"пальто", keywords:["пальто","куртка","одежда"], price:299990, in_stock:false, image_url:"https://placehold.co/400x400/bcaaa4/333333?text=Max+Mara+Coat" },
-  { id:52, name:"Футболка Polo Ralph Lauren White", brand:"Ralph Lauren", category:"одежда", keywords:["футболка","одежда"], price:29990, in_stock:true, image_url:"https://placehold.co/400x400/fafafa/333333?text=Polo+Ralph+Lauren" },
-
-  // Фотоаппараты
-  { id:53, name:"Sony Alpha ZV-E10 Kit 16-50mm", brand:"Sony", category:"фотоаппарат", keywords:["фотоаппарат","камера","sony"], price:279990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Sony+ZV-E10" },
-  { id:54, name:"Canon EOS R50 Kit 18-45mm", brand:"Canon", category:"фотоаппарат", keywords:["фотоаппарат","камера"], price:329990, in_stock:true, image_url:"https://placehold.co/400x400/c62828/ffffff?text=Canon+EOS+R50" },
-  { id:55, name:"Nikon Z30 Kit 16-50mm", brand:"Nikon", category:"фотоаппарат", keywords:["фотоаппарат","камера"], price:309990, in_stock:true, image_url:"https://placehold.co/400x400/ffd600/333333?text=Nikon+Z30" },
-  { id:56, name:"GoPro Hero 12 Black", brand:"GoPro", category:"камера", keywords:["камера","фотоаппарат"], price:149990, in_stock:true, image_url:"https://placehold.co/400x400/1b5e20/ffffff?text=GoPro+Hero+12" },
-
-  // Игровые
-  { id:57, name:"Sony PlayStation 5 Slim 1TB", brand:"Sony", category:"консоль", keywords:["консоль","игровой","джойстик","sony"], price:319990, in_stock:true, image_url:"https://placehold.co/400x400/003087/ffffff?text=PS5+Slim" },
-  { id:58, name:"Xbox Series X 1TB", brand:"Microsoft", category:"консоль", keywords:["консоль","игровой","джойстик"], price:299990, in_stock:true, image_url:"https://placehold.co/400x400/107c10/ffffff?text=Xbox+Series+X" },
-  { id:59, name:"Nintendo Switch OLED Mario Edition", brand:"Nintendo", category:"консоль", keywords:["консоль","игровой"], price:179990, in_stock:false, image_url:"https://placehold.co/400x400/e53935/ffffff?text=Switch+OLED+Mario" },
-  { id:60, name:"Геймпад Xbox Wireless Controller Carbon Black", brand:"Microsoft", category:"джойстик", keywords:["джойстик","консоль","игровой"], price:39990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Xbox+Pad" },
-  { id:61, name:"Геймпад Sony DualSense White", brand:"Sony", category:"джойстик", keywords:["джойстик","консоль","игровой","sony"], price:34990, in_stock:true, image_url:"https://placehold.co/400x400/e8eaf6/333333?text=DualSense" },
-
-  // Мониторы / периферия
-  { id:62, name:"Samsung 27\" Odyssey G5 WQHD 165Hz", brand:"Samsung", category:"монитор", keywords:["монитор","samsung"], price:149990, in_stock:true, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=Odyssey+G5" },
-  { id:63, name:"LG 27\" UltraGear QHD IPS 180Hz", brand:"LG", category:"монитор", keywords:["монитор","lg"], price:169990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=LG+UltraGear" },
-  { id:64, name:"Клавиатура Logitech MX Keys S Graphite", brand:"Logitech", category:"клавиатура", keywords:["клавиатура"], price:59990, in_stock:true, image_url:"https://placehold.co/400x400/37474f/ffffff?text=MX+Keys+S" },
-  { id:65, name:"Мышь Logitech MX Master 3S", brand:"Logitech", category:"мышь", keywords:["мышь"], price:44990, in_stock:true, image_url:"https://placehold.co/400x400/455a64/ffffff?text=MX+Master+3S" },
-  { id:66, name:"Клавиатура Keychron K2 Pro QMK", brand:"Keychron", category:"клавиатура", keywords:["клавиатура"], price:49990, in_stock:true, image_url:"https://placehold.co/400x400/795548/ffffff?text=Keychron+K2+Pro" },
-
-  // Дроны
-  { id:67, name:"DJI Mini 4 Pro (DJI RC-N2)", brand:"DJI", category:"дрон", keywords:["дрон","квадрокоптер","камера"], price:369990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=DJI+Mini+4+Pro" },
-  { id:68, name:"DJI Avata 2 Fly More Combo", brand:"DJI", category:"дрон", keywords:["дрон","квадрокоптер"], price:499990, in_stock:true, image_url:"https://placehold.co/400x400/37474f/ffffff?text=DJI+Avata+2" },
-
-  // Пылесосы
-  { id:69, name:"Dyson V15 Detect Absolute", brand:"Dyson", category:"пылесос", keywords:["пылесос"], price:349990, in_stock:true, image_url:"https://placehold.co/400x400/e65100/ffffff?text=Dyson+V15" },
-  { id:70, name:"Xiaomi Dreame L10s Ultra Robot", brand:"Xiaomi", category:"пылесос", keywords:["пылесос","xiaomi"], price:299990, in_stock:true, image_url:"https://placehold.co/400x400/263238/ffffff?text=Dreame+L10s" },
-  { id:71, name:"Samsung Bespoke Jet AI Vacuum", brand:"Samsung", category:"пылесос", keywords:["пылесос","samsung"], price:249990, in_stock:false, image_url:"https://placehold.co/400x400/ffd600/333333?text=Bespoke+Jet+AI" },
-
-  // Кофемашины
-  { id:72, name:"De'Longhi Magnifica Evo ECAM290.21", brand:"DeLonghi", category:"кофемашина", keywords:["кофемашина","кофе","эспрессо","техника"], price:299990, in_stock:true, image_url:"https://placehold.co/400x400/4e342e/ffffff?text=Magnifica+Evo" },
-  { id:73, name:"Nespresso Vertuo Next Chrome", brand:"Nespresso", category:"кофемашина", keywords:["кофемашина","кофе"], price:99990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Vertuo+Next" },
-  { id:74, name:"Jura E8 Platinum 2024", brand:"Jura", category:"кофемашина", keywords:["кофемашина","кофе","эспрессо"], price:599990, in_stock:true, image_url:"https://placehold.co/400x400/9e9e9e/ffffff?text=Jura+E8" },
-
-  // Фены / стайлеры
-  { id:75, name:"Dyson Supersonic HD15 Fuchsia", brand:"Dyson", category:"фен", keywords:["фен","стайлер","техника"], price:149990, in_stock:true, image_url:"https://placehold.co/400x400/ad1457/ffffff?text=Dyson+Supersonic" },
-  { id:76, name:"Dyson Airwrap Multi-Styler Complete Long", brand:"Dyson", category:"стайлер", keywords:["фен","стайлер","техника"], price:219990, in_stock:true, image_url:"https://placehold.co/400x400/e91e63/ffffff?text=Dyson+Airwrap" },
-  { id:77, name:"Philips BHD548 ThermoProtect Ionic", brand:"Philips", category:"фен", keywords:["фен","техника"], price:29990, in_stock:true, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=Philips+BHD548" },
-
-  // Очки
-  { id:78, name:"Ray-Ban Wayfarer Classic RB2140", brand:"Ray-Ban", category:"очки", keywords:["очки","солнцезащитные"], price:69990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Ray-Ban+Wayfarer" },
-  { id:79, name:"Oakley Holbrook Prizm", brand:"Oakley", category:"очки", keywords:["очки","солнцезащитные","спортивная"], price:79990, in_stock:true, image_url:"https://placehold.co/400x400/e53935/ffffff?text=Oakley+Holbrook" },
-  { id:80, name:"Apple Vision Pro 256GB", brand:"Apple", category:"очки", keywords:["очки","apple"], price:2799990, in_stock:false, image_url:"https://placehold.co/400x400/1c1c1e/ffffff?text=Apple+Vision+Pro" },
-
-  // Рюкзаки / чемоданы
-  { id:81, name:"Samsonite Cosmolite 3.0 75L", brand:"Samsonite", category:"чемодан", keywords:["чемодан","багаж"], price:119990, in_stock:true, image_url:"https://placehold.co/400x400/455a64/ffffff?text=Samsonite+Cosmolite" },
-  { id:82, name:"RIMOWA Essential Lite 33L Cabin", brand:"RIMOWA", category:"чемодан", keywords:["чемодан","багаж"], price:299990, in_stock:true, image_url:"https://placehold.co/400x400/b0bec5/333333?text=RIMOWA+Essential" },
-  { id:83, name:"Nike Brasilia Backpack 24L", brand:"Nike", category:"рюкзак", keywords:["рюкзак","nike"], price:24990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Nike+Brasilia" },
-  { id:84, name:"The North Face Borealis 28L", brand:"The North Face", category:"рюкзак", keywords:["рюкзак"], price:49990, in_stock:true, image_url:"https://placehold.co/400x400/1b5e20/ffffff?text=Borealis+28L" },
-
-  // Книги / игрушки (для разнообразия)
-  { id:85, name:"LEGO Technic Bugatti Bolide 42151", brand:"LEGO", category:"игрушки", keywords:["игрушки"], price:79990, in_stock:true, image_url:"https://placehold.co/400x400/ffd600/333333?text=LEGO+Bugatti" },
-  { id:86, name:"Атомный навык — Джеймс Клир (книга)", brand:"МИФ", category:"книга", keywords:["книга"], price:4990, in_stock:true, image_url:"https://placehold.co/400x400/e53935/ffffff?text=Atomic+Habits" },
-
-  // Дополнительные смартфоны (до 100)
-  { id:87, name:"Google Pixel 8 Pro 128GB", brand:"Google", category:"смартфон", keywords:["смартфон","телефон"], price:449990, in_stock:true, image_url:"https://placehold.co/400x400/4285f4/ffffff?text=Pixel+8+Pro" },
-  { id:88, name:"OnePlus 12 12/256GB", brand:"OnePlus", category:"смартфон", keywords:["смартфон","телефон"], price:299990, in_stock:true, image_url:"https://placehold.co/400x400/e53935/ffffff?text=OnePlus+12" },
-  { id:89, name:"Vivo X100 Pro 16/512GB", brand:"Vivo", category:"смартфон", keywords:["смартфон","телефон"], price:369990, in_stock:true, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=Vivo+X100+Pro" },
-  { id:90, name:"OPPO Find X7 Ultra 16/512GB", brand:"OPPO", category:"смартфон", keywords:["смартфон","телефон"], price:399990, in_stock:false, image_url:"https://placehold.co/400x400/006064/ffffff?text=Find+X7+Ultra" },
-  { id:91, name:"Realme GT 5 Pro 16/256GB", brand:"Realme", category:"смартфон", keywords:["смартфон","телефон"], price:239990, in_stock:true, image_url:"https://placehold.co/400x400/ff6d00/ffffff?text=GT+5+Pro" },
-  { id:92, name:"Motorola Edge 50 Pro 12/512GB", brand:"Motorola", category:"смартфон", keywords:["смартфон","телефон"], price:199990, in_stock:true, image_url:"https://placehold.co/400x400/880e4f/ffffff?text=Edge+50+Pro" },
-  // дополнительные аксессуары
-  { id:93, name:"Зарядное MagSafe 15W для iPhone 15", brand:"Apple", category:"аксессуары", keywords:["apple","iphone","телефон"], price:19990, in_stock:true, image_url:"https://placehold.co/400x400/f5f5f7/333333?text=MagSafe+15W" },
-  { id:94, name:"Samsung 65W Duo Charge Station", brand:"Samsung", category:"аксессуары", keywords:["samsung","смартфон","телефон"], price:24990, in_stock:true, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=Samsung+65W+Duo" },
-  { id:95, name:"Anker 26800mAh PowerCore PD 45W", brand:"Anker", category:"аксессуары", keywords:["смартфон","телефон"], price:34990, in_stock:true, image_url:"https://placehold.co/400x400/212121/ffffff?text=Anker+PowerCore" },
-  { id:96, name:"Belkin Boost↑Charge Pro 3-in-1 MagSafe", brand:"Belkin", category:"аксессуары", keywords:["apple","iphone","часы","tws"], price:49990, in_stock:true, image_url:"https://placehold.co/400x400/37474f/ffffff?text=Belkin+3in1" },
-  // Кухня / техника
-  { id:97, name:"Instant Pot Duo 7-in-1 Multi Cooker 8L", brand:"Instant Pot", category:"техника", keywords:["техника","кухня"], price:69990, in_stock:true, image_url:"https://placehold.co/400x400/757575/ffffff?text=Instant+Pot+Duo" },
-  { id:98, name:"KitchenAid Artisan Stand Mixer 4.8L", brand:"KitchenAid", category:"техника", keywords:["техника","кухня"], price:199990, in_stock:true, image_url:"https://placehold.co/400x400/e53935/ffffff?text=KitchenAid+Artisan" },
-  { id:99, name:"Philips Air Fryer XXL HD9650", brand:"Philips", category:"техника", keywords:["техника","кухня"], price:79990, in_stock:false, image_url:"https://placehold.co/400x400/1565c0/ffffff?text=Philips+Air+Fryer" },
-  { id:100, name:"Tefal ActiFry Genius XL 2-in-1", brand:"Tefal", category:"техника", keywords:["техника","кухня"], price:59990, in_stock:true, image_url:"https://placehold.co/400x400/e64a19/ffffff?text=Tefal+ActiFry" },
-];
-
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-let selectedFile = null;
-let backendUrl = localStorage.getItem('halyk_backend_url') || '';
-let apiConnected = false;
-
-// ═══════════════════════════════════════════════════════
-// DOM REFS
-// ═══════════════════════════════════════════════════════
-const dropzone    = document.getElementById('dropzone');
-const fileInput   = document.getElementById('file-input');
-const searchBtn   = document.getElementById('search-btn');
-const preview     = document.getElementById('preview');
-const previewWrap = document.getElementById('preview-wrap');
-const statusEl    = document.getElementById('status');
-const grid        = document.getElementById('grid');
-const empty       = document.getElementById('empty');
-const apiBar      = document.getElementById('api-bar');
-const apiText     = document.getElementById('api-text');
-const labelsSection = document.getElementById('labels-section');
-const tagsEl      = document.getElementById('tags');
-const labelsTitle = document.getElementById('labels-title');
-
-// Modal
-const modalOverlay  = document.getElementById('modal-overlay');
-const apiUrlInput   = document.getElementById('api-url-input');
-const modalStatus   = document.getElementById('modal-status');
-const modalSaveBtn  = document.getElementById('modal-save-btn');
-const modalCloseBtn = document.getElementById('modal-close-btn');
-const openModalBtn  = document.getElementById('open-modal-btn');
-
-// ═══════════════════════════════════════════════════════
-// API STATUS
-// ═══════════════════════════════════════════════════════
-function setApiBar(mode, text) {
-  apiBar.className = mode;
-  apiText.textContent = text;
-}
-
-async function checkConnection(url) {
-  try {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 8000);
-    const resp = await fetch(url.replace(/\/$/, '') + '/', { signal: ctrl.signal });
-    clearTimeout(tid);
-    return resp.ok;
-  } catch { return false; }
-}
-
-async function initApiStatus() {
-  if (!backendUrl) {
-    setApiBar('mock', 'Мок-режим: бэкенд не подключён. Нажмите «⚙️ Настроить API».');
-    apiConnected = false;
-    return;
-  }
-  setApiBar('mock', `Проверяем соединение с ${backendUrl}…`);
-  const ok = await checkConnection(backendUrl);
-  apiConnected = ok;
-  if (ok) {
-    setApiBar('ok', `Google Vision API подключён: ${backendUrl}`);
-  } else {
-    setApiBar('error', `Бэкенд недоступен (${backendUrl}). Работаем в мок-режиме.`);
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-// MODAL
-// ═══════════════════════════════════════════════════════
-openModalBtn.addEventListener('click', () => {
-  apiUrlInput.value = backendUrl;
-  modalStatus.textContent = '';
-  modalStatus.className = '';
-  modalOverlay.classList.add('open');
-  apiUrlInput.focus();
-});
-modalCloseBtn.addEventListener('click', () => modalOverlay.classList.remove('open'));
-modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) modalOverlay.classList.remove('open'); });
-
-modalSaveBtn.addEventListener('click', async () => {
-  const url = apiUrlInput.value.trim();
-  if (!url) { modalStatus.textContent = 'Введите URL.'; modalStatus.className = 'error'; return; }
-  modalSaveBtn.disabled = true;
-  modalStatus.textContent = 'Проверяем соединение…';
-  modalStatus.className = '';
-  const ok = await checkConnection(url);
-  modalSaveBtn.disabled = false;
-  if (ok) {
-    backendUrl = url;
-    localStorage.setItem('halyk_backend_url', url);
-    apiConnected = true;
-    setApiBar('ok', `Google Vision API подключён: ${url}`);
-    modalStatus.textContent = '✓ Соединение установлено!';
-    modalStatus.className = 'ok';
-    setTimeout(() => modalOverlay.classList.remove('open'), 1200);
-  } else {
-    apiConnected = false;
-    modalStatus.textContent = '✗ Не удалось подключиться. Проверьте URL и убедитесь, что бэкенд запущен.';
-    modalStatus.className = 'error';
-  }
-});
-
-// ═══════════════════════════════════════════════════════
-// FILE UPLOAD
-// ═══════════════════════════════════════════════════════
-dropzone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
-dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
-dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
-dropzone.addEventListener('drop', e => {
-  e.preventDefault(); dropzone.classList.remove('drag');
-  handleFile(e.dataTransfer.files[0]);
-});
-
-function handleFile(file) {
-  if (!file) return;
-  if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
-    alert('Поддерживаются только JPG, PNG, WEBP'); return;
-  }
-  if (file.size > 10 * 1024 * 1024) {
-    alert('Файл слишком большой (максимум 10 МБ)'); return;
-  }
-  selectedFile = file;
-  preview.src = URL.createObjectURL(file);
-  previewWrap.style.display = 'block';
-  searchBtn.disabled = false;
-  grid.innerHTML = '';
-  labelsSection.style.display = 'none';
-  tagsEl.innerHTML = '';
-  empty.style.display = 'none';
-  statusEl.textContent = '';
-}
-
-// ═══════════════════════════════════════════════════════
-// SEARCH
-// ═══════════════════════════════════════════════════════
-function searchProducts(keywords) {
-  if (!keywords || !keywords.length) return [];
-  const kw = keywords.map(k => k.toLowerCase().trim());
-  const scored = PRODUCTS.map(p => {
-    const score = kw.reduce((acc, k) => {
-      const inKeywords = p.keywords.some(pk => pk.includes(k) || k.includes(pk));
-      const inName = p.name.toLowerCase().includes(k);
-      const inBrand = p.brand.toLowerCase().includes(k);
-      const inCategory = p.category.toLowerCase().includes(k);
-      return acc + (inKeywords ? 3 : 0) + (inName ? 2 : 0) + (inBrand ? 2 : 0) + (inCategory ? 1 : 0);
-    }, 0);
-    return { p, score };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
-  return scored.slice(0, 12).map(x => x.p);
-}
-
-function mockKeywordsFromFilename(filename) {
-  const base = filename.replace(/\.[^.]+$/, '').toLowerCase().replace(/[-_]/g, ' ');
-  return base.split(/\s+/).filter(w => w.length > 2);
-}
-
-function renderProducts(products) {
-  if (!products.length) {
-    empty.style.display = 'block';
-    return;
-  }
-  grid.innerHTML = products.map(p => `
-    <div class="card">
-      <img src="${p.image_url}" alt="${p.name}" loading="lazy"
-           onerror="this.src='https://placehold.co/400x400/e0e0e0/999?text=Нет+фото'" />
-      <div class="card-body">
-        <div class="card-name">${p.name}</div>
-        <div class="card-meta">${p.brand} · ${p.category}</div>
-        <div class="card-price">
-          ${Number(p.price).toLocaleString('ru-RU')} ₸
-          ${p.in_stock ? '' : '<span class="badge-out">Нет в наличии</span>'}
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-visual">
+      <div>
+        <div class="hero-eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          Новая функция
         </div>
+        <h1 class="hero-title">Найди товар<br>по <em>фотографии</em></h1>
+        <p class="hero-sub">Сфотографируй понравившийся товар или загрузи снимок — ИИ найдёт похожее в каталоге за секунды.</p>
+      </div>
+      <div class="hero-steps-v">
+        <div class="hero-step"><div class="hero-step-dot">1</div>Загрузи фото товара</div>
+        <div class="hero-step"><div class="hero-step-dot">2</div>ИИ анализирует и распознаёт</div>
+        <div class="hero-step"><div class="hero-step-dot">3</div>Видишь похожие товары</div>
       </div>
     </div>
-  `).join('');
+
+    <div class="hero-upload">
+      <input type="file" id="file-input" accept="image/*">
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById(&#39;file-input&#39;).click()">
+        <div class="preview-wrap" id="preview-wrap">
+          <img id="preview-img" class="preview-img" src="file:///C:/Users/user/Downloads/index_1.html" alt="">
+          <button class="preview-rm" id="rm-btn" onclick="removeImg(event)">×</button>
+        </div>
+        <div id="dz-content">
+          <div class="dz-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          </div>
+          <div class="dz-title">Загрузи изображение</div>
+          <div class="dz-sub">Перетащи сюда или выбери файл</div>
+          <button class="btn btn-green" onclick="event.stopPropagation(); document.getElementById(&#39;file-input&#39;).click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Выбрать файл
+          </button>
+          <div class="dz-hint">JPG, PNG, WEBP · до 10 МБ</div>
+        </div>
+      </div>
+
+      <button class="btn btn-green btn-full" id="search-btn" style="display:none" onclick="runSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+        Найти похожие товары
+      </button>
+    </div>
+  </div>
+
+  <!-- BANNER -->
+  <div class="banner">
+    <div class="banner-text">
+      <h3>Рассрочка 0-0-24 на все товары</h3>
+      <p>Покупай выгодно — без процентов и переплат с картой Halyk</p>
+    </div>
+    <div class="banner-badge">До 24 месяцев</div>
+  </div>
+
+  <!-- POPULAR SECTION -->
+  <div id="popular-section">
+    <div class="section-label">Популярные категории</div>
+    <div class="cats" id="cats-row"><div class="cat" onclick="filterCat(&#39;Смартфоны&#39;,this)">📱 Смартфоны</div><div class="cat" onclick="filterCat(&#39;Наушники&#39;,this)">🎧 Наушники</div><div class="cat" onclick="filterCat(&#39;Кроссовки&#39;,this)">👟 Кроссовки</div><div class="cat" onclick="filterCat(&#39;Ноутбуки&#39;,this)">💻 Ноутбуки</div><div class="cat" onclick="filterCat(&#39;Телевизоры&#39;,this)">📺 Телевизоры</div><div class="cat" onclick="filterCat(&#39;Умные часы&#39;,this)">⌚ Умные часы</div><div class="cat" onclick="filterCat(&#39;Планшеты&#39;,this)">📱 Планшеты</div><div class="cat" onclick="filterCat(&#39;Игровые консоли&#39;,this)">🎮 Игровые консоли</div><div class="cat" onclick="filterCat(&#39;Кофемашины&#39;,this)">☕ Кофемашины</div><div class="cat" onclick="filterCat(&#39;Одежда&#39;,this)">👕 Одежда</div></div>
+    <div class="section-label">Сейчас покупают <span id="pop-count">10 товаров</span></div>
+    <div class="grid" id="pop-grid"><div class="card">
+    <div class="card-img">📱</div>
+    <div class="card-body">
+      <span class="card-badge badge-sale">Скидка</span>
+      <div class="card-name">iPhone 15 Pro 256GB Natural Titanium</div>
+      <div class="card-price">
+        <div class="card-old">599&nbsp;990 ₸</div>
+        <div class="card-cur">549&nbsp;990 ₸</div>
+        <div class="card-installment">от 22&nbsp;916 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.8 (1&nbsp;240)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">📱</div>
+    <div class="card-body">
+      
+      <div class="card-name">iPhone 14 128GB Midnight</div>
+      <div class="card-price">
+        
+        <div class="card-cur">389&nbsp;990 ₸</div>
+        <div class="card-installment">от 16&nbsp;250 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.7 (890)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">📱</div>
+    <div class="card-body">
+      <span class="card-badge badge-new">Новинка</span>
+      <div class="card-name">Samsung Galaxy S24 Ultra 512GB</div>
+      <div class="card-price">
+        
+        <div class="card-cur">519&nbsp;990 ₸</div>
+        <div class="card-installment">от 21&nbsp;666 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.9 (760)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">📱</div>
+    <div class="card-body">
+      <span class="card-badge badge-sale">Скидка</span>
+      <div class="card-name">Samsung Galaxy A55 5G 256GB</div>
+      <div class="card-price">
+        <div class="card-old">219&nbsp;990 ₸</div>
+        <div class="card-cur">189&nbsp;990 ₸</div>
+        <div class="card-installment">от 7&nbsp;916 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.5 (430)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">📱</div>
+    <div class="card-body">
+      
+      <div class="card-name">Xiaomi 14 Pro 512GB Black</div>
+      <div class="card-price">
+        
+        <div class="card-cur">329&nbsp;990 ₸</div>
+        <div class="card-installment">от 13&nbsp;750 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.6 (320)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">📱</div>
+    <div class="card-body">
+      
+      <div class="card-name">Redmi Note 13 Pro 256GB</div>
+      <div class="card-price">
+        
+        <div class="card-cur">139&nbsp;990 ₸</div>
+        <div class="card-installment">от 5&nbsp;833 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.4 (560)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">🎧</div>
+    <div class="card-body">
+      
+      <div class="card-name">AirPods Pro 2 MagSafe</div>
+      <div class="card-price">
+        
+        <div class="card-cur">119&nbsp;990 ₸</div>
+        <div class="card-installment">от 5&nbsp;000 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.9 (2&nbsp;100)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">🎧</div>
+    <div class="card-body">
+      <span class="card-badge badge-sale">Скидка</span>
+      <div class="card-name">AirPods 3 Lightning</div>
+      <div class="card-price">
+        <div class="card-old">89&nbsp;990 ₸</div>
+        <div class="card-cur">79&nbsp;990 ₸</div>
+        <div class="card-installment">от 3&nbsp;333 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.7 (980)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">🎧</div>
+    <div class="card-body">
+      
+      <div class="card-name">Sony WH-1000XM5 Black</div>
+      <div class="card-price">
+        
+        <div class="card-cur">149&nbsp;990 ₸</div>
+        <div class="card-installment">от 6&nbsp;250 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.9 (650)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div><div class="card">
+    <div class="card-img">🎧</div>
+    <div class="card-body">
+      
+      <div class="card-name">Samsung Galaxy Buds2 Pro</div>
+      <div class="card-price">
+        
+        <div class="card-cur">69&nbsp;990 ₸</div>
+        <div class="card-installment">от 2&nbsp;916 ₸ × 24 мес</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>4.6 (410)</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div></div>
+  </div>
+
+  <!-- RESULTS SECTION -->
+  <div id="results-area">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-t" id="l-text">Анализируем изображение...</div>
+      <div class="loading-s" id="l-step">Отправляем в Google Vision API</div>
+    </div>
+    <div id="results-content" style="display:none">
+      <div class="results-head">
+        <h2 id="r-title">Результаты</h2>
+        <div class="label-chips" id="r-labels"></div>
+      </div>
+      <div class="grid" id="r-grid"></div>
+      <div class="empty" id="r-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+        <h3>Ничего не нашлось</h3>
+        <p>Попробуй другое фото или поищи вручную</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Halyk Market</div>
+    <div class="footer-links">
+      <a href="file:///C:/Users/user/Downloads/index_1.html#">Покупателям</a>
+      <a href="file:///C:/Users/user/Downloads/index_1.html#">Партнёрам</a>
+      <a href="file:///C:/Users/user/Downloads/index_1.html#">Доставка</a>
+      <a href="file:///C:/Users/user/Downloads/index_1.html#">Поддержка</a>
+    </div>
+    <div class="footer-copy">© 2025 Halyk Market · POC — поиск по фото</div>
+  </div>
+</footer>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const BACKEND_URL = (window.HALYK_CONFIG && window.HALYK_CONFIG.BACKEND_URL) || "";
+
+// ── PRODUCTS ────────────────────────────────────────────────
+const PRODUCTS = [
+  { id:1,  name:"iPhone 15 Pro 256GB Natural Titanium",   cat:"Смартфоны",       e:"📱", price:549990, old:599990, rate:4.8, rev:1240, badge:"sale", kw:["iphone","apple","смартфон","телефон","айфон"] },
+  { id:2,  name:"iPhone 14 128GB Midnight",               cat:"Смартфоны",       e:"📱", price:389990,            rate:4.7, rev:890,            kw:["iphone","apple","смартфон","телефон"] },
+  { id:3,  name:"Samsung Galaxy S24 Ultra 512GB",         cat:"Смартфоны",       e:"📱", price:519990,            rate:4.9, rev:760,  badge:"new", kw:["samsung","galaxy","смартфон","телефон"] },
+  { id:4,  name:"Samsung Galaxy A55 5G 256GB",            cat:"Смартфоны",       e:"📱", price:189990, old:219990, rate:4.5, rev:430,  badge:"sale",kw:["samsung","galaxy","смартфон"] },
+  { id:5,  name:"Xiaomi 14 Pro 512GB Black",              cat:"Смартфоны",       e:"📱", price:329990,            rate:4.6, rev:320,            kw:["xiaomi","смартфон","телефон"] },
+  { id:6,  name:"Redmi Note 13 Pro 256GB",               cat:"Смартфоны",       e:"📱", price:139990,            rate:4.4, rev:560,            kw:["xiaomi","redmi","смартфон"] },
+  { id:7,  name:"AirPods Pro 2 MagSafe",                 cat:"Наушники",        e:"🎧", price:119990,            rate:4.9, rev:2100,           kw:["airpods","apple","наушники","беспроводные"] },
+  { id:8,  name:"AirPods 3 Lightning",                   cat:"Наушники",        e:"🎧", price:79990,  old:89990,  rate:4.7, rev:980,  badge:"sale",kw:["airpods","apple","наушники"] },
+  { id:9,  name:"Sony WH-1000XM5 Black",                 cat:"Наушники",        e:"🎧", price:149990,            rate:4.9, rev:650,            kw:["sony","наушники","беспроводные"] },
+  { id:10, name:"Samsung Galaxy Buds2 Pro",              cat:"Наушники",        e:"🎧", price:69990,             rate:4.6, rev:410,            kw:["samsung","наушники","tws"] },
+  { id:11, name:"JBL Tune 770NC Wireless",               cat:"Наушники",        e:"🎧", price:39990,             rate:4.4, rev:280,            kw:["jbl","наушники","беспроводные"] },
+  { id:12, name:"Nike Air Max 270 White/Black",           cat:"Кроссовки",       e:"👟", price:64990,             rate:4.7, rev:890,            kw:["nike","кроссовки","обувь"] },
+  { id:13, name:"Nike React Infinity Run Flyknit 4",      cat:"Кроссовки",       e:"👟", price:54990,  old:64990,  rate:4.6, rev:340,  badge:"sale",kw:["nike","кроссовки","беговые"] },
+  { id:14, name:"Adidas Ultraboost 23 Core Black",        cat:"Кроссовки",       e:"👟", price:69990,             rate:4.8, rev:560,            kw:["adidas","кроссовки","беговые"] },
+  { id:15, name:"Adidas Stan Smith White/Green",          cat:"Кроссовки",       e:"👟", price:34990,             rate:4.5, rev:1200,           kw:["adidas","кроссовки","обувь"] },
+  { id:16, name:"New Balance 990v6 Made in USA",          cat:"Кроссовки",       e:"👟", price:89990,             rate:4.8, rev:220,  badge:"new", kw:["new balance","кроссовки"] },
+  { id:17, name:"Converse Chuck Taylor All Star High",    cat:"Кроссовки",       e:"👟", price:19990,             rate:4.6, rev:1800,           kw:["converse","кроссовки","кеды"] },
+  { id:18, name:"MacBook Air M3 13\" 256GB",              cat:"Ноутбуки",        e:"💻", price:699990,            rate:4.9, rev:430,  badge:"new", kw:["macbook","apple","ноутбук"] },
+  { id:19, name:"MacBook Pro M3 Pro 14\" 512GB",          cat:"Ноутбуки",        e:"💻", price:999990,            rate:4.9, rev:210,            kw:["macbook","apple","ноутбук"] },
+  { id:20, name:"ASUS ROG Zephyrus G14 RTX 4060",        cat:"Ноутбуки",        e:"💻", price:649990,            rate:4.7, rev:180,            kw:["asus","ноутбук","игровой"] },
+  { id:21, name:"Lenovo IdeaPad Gaming 3 RTX 3050",      cat:"Ноутбуки",        e:"💻", price:379990, old:429990, rate:4.5, rev:320,  badge:"sale",kw:["lenovo","ноутбук","игровой"] },
+  { id:22, name:"Dell XPS 15 9530 i7 RTX 4060",         cat:"Ноутбуки",        e:"💻", price:849990,            rate:4.7, rev:130,            kw:["dell","xps","ноутбук"] },
+  { id:23, name:"Samsung 65\" QLED 4K Smart TV Q80C",    cat:"Телевизоры",      e:"📺", price:449990,            rate:4.8, rev:340,            kw:["samsung","телевизор","qled","4k"] },
+  { id:24, name:"LG OLED 55\" evo C3 4K",               cat:"Телевизоры",      e:"📺", price:529990,            rate:4.9, rev:270,            kw:["lg","телевизор","oled","4k"] },
+  { id:25, name:"Xiaomi TV A2 50\" 4K",                  cat:"Телевизоры",      e:"📺", price:129990,            rate:4.4, rev:560,            kw:["xiaomi","телевизор","4k"] },
+  { id:26, name:"Apple Watch Series 9 45mm GPS",         cat:"Умные часы",      e:"⌚", price:179990,            rate:4.8, rev:780,            kw:["apple watch","часы","умные"] },
+  { id:27, name:"Apple Watch Ultra 2 49mm Titanium",     cat:"Умные часы",      e:"⌚", price:359990,            rate:4.9, rev:290,  badge:"new", kw:["apple watch","часы","умные"] },
+  { id:28, name:"Samsung Galaxy Watch 6 Classic 47mm",   cat:"Умные часы",      e:"⌚", price:129990,            rate:4.6, rev:340,            kw:["samsung","часы","умные","galaxy watch"] },
+  { id:29, name:"Garmin Forerunner 965",                 cat:"Умные часы",      e:"⌚", price:249990,            rate:4.9, rev:180,            kw:["garmin","часы","спортивные"] },
+  { id:30, name:"iPad Pro 12.9\" M2 256GB Wi-Fi",        cat:"Планшеты",        e:"📱", price:499990,            rate:4.9, rev:320,            kw:["ipad","apple","планшет"] },
+  { id:31, name:"iPad Air 5 256GB Wi-Fi Blue",           cat:"Планшеты",        e:"📱", price:329990, old:369990, rate:4.8, rev:450,  badge:"sale",kw:["ipad","apple","планшет"] },
+  { id:32, name:"Samsung Galaxy Tab S9+ 12.4\"",         cat:"Планшеты",        e:"📱", price:379990,            rate:4.7, rev:230,            kw:["samsung","планшет","galaxy tab"] },
+  { id:33, name:"PlayStation 5 Slim Disc Edition",       cat:"Игровые консоли", e:"🎮", price:329990,            rate:4.9, rev:1200,           kw:["playstation","ps5","игровой","консоль"] },
+  { id:34, name:"Xbox Series X 1TB",                    cat:"Игровые консоли", e:"🎮", price:299990,            rate:4.8, rev:890,            kw:["xbox","игровой","консоль"] },
+  { id:35, name:"Nintendo Switch OLED White",            cat:"Игровые консоли", e:"🎮", price:189990,            rate:4.8, rev:670,            kw:["nintendo","switch","консоль"] },
+  { id:36, name:"Sony Alpha A7 IV Body",                 cat:"Фотоаппараты",    e:"📷", price:1099990,           rate:4.9, rev:85,             kw:["sony","фотоаппарат","камера","alpha"] },
+  { id:37, name:"Canon EOS R50 Body",                   cat:"Фотоаппараты",    e:"📷", price:349990,            rate:4.7, rev:160,            kw:["canon","фотоаппарат","камера"] },
+  { id:38, name:"GoPro Hero 12 Black",                  cat:"Экшн-камеры",     e:"📷", price:179990,            rate:4.8, rev:340,            kw:["gopro","камера","экшн"] },
+  { id:39, name:"DJI Mini 4 Pro",                       cat:"Дроны",           e:"🚁", price:399990,            rate:4.8, rev:120,  badge:"new", kw:["dji","дрон","квадрокоптер"] },
+  { id:40, name:"Dyson V15 Detect Absolute",            cat:"Пылесосы",        e:"🧹", price:319990,            rate:4.9, rev:430,            kw:["dyson","пылесос","беспроводной"] },
+  { id:41, name:"Xiaomi Robot Vacuum S10+",             cat:"Пылесосы",        e:"🤖", price:189990, old:229990, rate:4.7, rev:280,  badge:"sale",kw:["xiaomi","робот-пылесос"] },
+  { id:42, name:"Dyson Airwrap Complete Long",           cat:"Красота",         e:"💇", price:249990,            rate:4.8, rev:560,            kw:["dyson","фен","стайлер"] },
+  { id:43, name:"De'Longhi La Specialista Arte",        cat:"Кофемашины",      e:"☕", price:319990,            rate:4.8, rev:190,            kw:["delonghi","кофемашина","кофе","эспрессо"] },
+  { id:44, name:"Nespresso Vertuo Next Black",           cat:"Кофемашины",      e:"☕", price:89990,             rate:4.7, rev:650,            kw:["nespresso","кофемашина","кофе"] },
+  { id:45, name:"Logitech MX Master 3S Black",          cat:"Компьютеры",      e:"🖱️", price:29990,             rate:4.8, rev:890,            kw:["logitech","мышь","беспроводная"] },
+  { id:46, name:"Apple Magic Keyboard Touch ID RU",     cat:"Компьютеры",      e:"⌨️", price:59990,             rate:4.7, rev:430,            kw:["apple","клавиатура","mac"] },
+  { id:47, name:"Samsung 27\" Odyssey G7 165Hz",        cat:"Мониторы",        e:"🖥️", price:199990,            rate:4.8, rev:280,            kw:["samsung","монитор","игровой"] },
+  { id:48, name:"The North Face Nuptse Jacket",         cat:"Одежда",          e:"🧥", price:89990,             rate:4.8, rev:230,            kw:["the north face","куртка","пуховик","одежда"] },
+  { id:49, name:"Levi's 501 Original Jeans Blue",       cat:"Одежда",          e:"👖", price:29990,             rate:4.7, rev:1100,           kw:["levis","джинсы","одежда"] },
+  { id:50, name:"Nike Dri-FIT Legend Tee Black",        cat:"Одежда",          e:"👕", price:12990,             rate:4.5, rev:890,            kw:["nike","футболка","одежда","спорт"] },
+  { id:51, name:"Casio G-Shock GW-M5610 Black",        cat:"Часы",            e:"⌚", price:79990,             rate:4.8, rev:560,            kw:["casio","g-shock","часы"] },
+  { id:52, name:"JBL Charge 5 Blue",                   cat:"Колонки",         e:"🔊", price:44990,             rate:4.7, rev:780,            kw:["jbl","колонка","bluetooth"] },
+  { id:53, name:"Marshall Stanmore III Bluetooth",      cat:"Колонки",         e:"🔊", price:129990,            rate:4.8, rev:240,            kw:["marshall","колонка","bluetooth"] },
+  { id:54, name:"Sony WF-1000XM5 True Wireless",       cat:"Наушники",        e:"🎧", price:99990,             rate:4.8, rev:430,            kw:["sony","наушники","tws"] },
+  { id:55, name:"Beats Studio Pro Wireless Black",      cat:"Наушники",        e:"🎧", price:99990,             rate:4.6, rev:310,            kw:["beats","наушники","apple"] },
+  { id:56, name:"Xiaomi Smart Band 8 Pro",             cat:"Фитнес",          e:"⌚", price:24990,             rate:4.4, rev:560,            kw:["xiaomi","браслет","фитнес"] },
+  { id:57, name:"Fitbit Charge 6 Black",               cat:"Фитнес",          e:"⌚", price:69990,             rate:4.5, rev:320,            kw:["fitbit","браслет","фитнес"] },
+  { id:58, name:"Samsonite Cosmolite 75cm Silver",     cat:"Чемоданы",        e:"🧳", price:159990,            rate:4.8, rev:340,            kw:["samsonite","чемодан","багаж"] },
+  { id:59, name:"Ray-Ban Wayfarer Classic Black",       cat:"Аксессуары",      e:"🕶️", price:49990,             rate:4.7, rev:560,            kw:["ray-ban","очки","солнцезащитные"] },
+  { id:60, name:"Amazon Kindle Paperwhite 16GB",       cat:"Гаджеты",         e:"📖", price:59990,             rate:4.8, rev:780,            kw:["amazon","kindle","книга","электронная"] },
+];
+
+const CATS = [
+  { label:"Смартфоны",       e:"📱", kw:["смартфон","телефон","iphone","samsung","xiaomi"] },
+  { label:"Наушники",        e:"🎧", kw:["наушники","airpods","tws","беспроводные"] },
+  { label:"Кроссовки",       e:"👟", kw:["кроссовки","обувь","nike","adidas","кеды"] },
+  { label:"Ноутбуки",        e:"💻", kw:["ноутбук","macbook","laptop"] },
+  { label:"Телевизоры",      e:"📺", kw:["телевизор","4k","oled","qled"] },
+  { label:"Умные часы",      e:"⌚", kw:["часы","умные","apple watch","galaxy watch"] },
+  { label:"Планшеты",        e:"📱", kw:["планшет","ipad"] },
+  { label:"Игровые консоли", e:"🎮", kw:["playstation","xbox","nintendo","консоль"] },
+  { label:"Кофемашины",      e:"☕", kw:["кофемашина","кофе","эспрессо"] },
+  { label:"Одежда",          e:"👕", kw:["куртка","пуховик","футболка","джинсы","одежда"] },
+];
+
+const LABEL_MAP = {
+  "mobile phone":["смартфон","телефон"],"smartphone":["смартфон","телефон"],
+  "iphone":["iphone","apple"],"telephone":["телефон","смартфон"],
+  "communication device":["смартфон","телефон"],"portable communications device":["смартфон"],
+  "headphones":["наушники"],"earphones":["наушники","tws"],"earbuds":["наушники","tws"],
+  "audio equipment":["наушники","аудио"],"sneakers":["кроссовки","кеды"],
+  "running shoes":["кроссовки","беговые"],"footwear":["обувь","кроссовки"],
+  "shoe":["обувь","кроссовки"],"athletic shoe":["кроссовки"],"boot":["ботинки"],
+  "laptop":["ноутбук"],"computer":["ноутбук","компьютер"],"personal computer":["ноутбук"],
+  "television":["телевизор"],"tv":["телевизор"],"flat panel display":["телевизор","монитор"],
+  "smartwatch":["часы","умные"],"watch":["часы"],"wristwatch":["часы"],
+  "tablet computer":["планшет"],"tablet":["планшет"],"ipad":["ipad","планшет"],
+  "game controller":["консоль","джойстик"],"joystick":["джойстик","консоль"],
+  "coffee maker":["кофемашина","кофе"],"espresso machine":["кофемашина","эспрессо"],
+  "jacket":["куртка","пуховик"],"outerwear":["куртка","одежда"],
+  "t-shirt":["футболка","одежда"],"jeans":["джинсы","одежда"],
+  "camera":["фотоаппарат","камера"],"digital camera":["фотоаппарат"],
+  "speaker":["колонка","аудио"],"keyboard":["клавиатура"],"mouse":["мышь"],
+  "monitor":["монитор"],"drone":["дрон","квадрокоптер"],"vacuum cleaner":["пылесос"],
+  "hair dryer":["фен","стайлер"],"sunglasses":["очки","солнцезащитные"],
+  "suitcase":["чемодан"],"book":["книга"],
+};
+
+// ── HELPERS ─────────────────────────────────────────────────
+const fmt = p => p.toLocaleString("ru-KZ") + " ₸";
+const installment = p => fmt(Math.round(p / 24)) + " × 24 мес";
+
+function search(keywords) {
+  if (!keywords?.length) return [];
+  const terms = keywords.map(k => k.toLowerCase());
+  return PRODUCTS.map(p => {
+    let s = 0;
+    const nm = p.name.toLowerCase(), ct = p.cat.toLowerCase();
+    terms.forEach(t => {
+      if (nm.includes(t)) s += 3;
+      if (ct.includes(t)) s += 2;
+      p.kw.forEach(k => { if (k.includes(t) || t.includes(k)) s += 1; });
+    });
+    return { ...p, s };
+  }).filter(p => p.s > 0).sort((a, b) => b.s - a.s).slice(0, 12);
 }
 
-function renderLabels(labels, isMock) {
-  if (!labels || !labels.length) { labelsSection.style.display = 'none'; return; }
-  labelsSection.style.display = 'block';
-  labelsTitle.textContent = isMock ? 'Ключевые слова (мок-режим)' : 'Обнаружено Google Vision API';
-  tagsEl.innerHTML = labels.map(l => `<span class="tag ${isMock ? 'mock' : ''}">${l}</span>`).join('');
+function mockLabels(name) {
+  const n = name.toLowerCase();
+  if (n.includes("iphone") || n.includes("phone") || n.includes("samsung")) return ["smartphone","mobile phone"];
+  if (n.includes("shoe") || n.includes("sneak") || n.includes("nike") || n.includes("adidas")) return ["sneakers","footwear"];
+  if (n.includes("laptop") || n.includes("macbook")) return ["laptop","computer"];
+  if (n.includes("head") || n.includes("earbud") || n.includes("airpod")) return ["headphones","earbuds"];
+  if (n.includes("watch")) return ["smartwatch","watch"];
+  if (n.includes("tv") || n.includes("tele")) return ["television","tv"];
+  if (n.includes("camera")) return ["camera","digital camera"];
+  const pool = ["smartphone","sneakers","laptop","headphones","smartwatch","tablet","camera","jacket","speaker"];
+  return [pool[Math.floor(Math.random() * pool.length)]];
 }
 
-searchBtn.addEventListener('click', async () => {
-  if (!selectedFile) return;
-  searchBtn.disabled = true;
-  grid.innerHTML = '';
-  labelsSection.style.display = 'none';
-  tagsEl.innerHTML = '';
-  empty.style.display = 'none';
+function labelsToKw(labels) {
+  const s = new Set();
+  labels.forEach(l => {
+    const m = LABEL_MAP[l.toLowerCase()];
+    if (m) m.forEach(k => s.add(k));
+    else s.add(l);
+  });
+  return [...s];
+}
 
-  if (apiConnected && backendUrl) {
-    // ── Real API mode ──
-    statusEl.textContent = '🔍 Анализируем фото через Google Vision…';
-    const form = new FormData();
-    form.append('file', selectedFile);
-    try {
-      const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 15000);
-      const resp = await fetch(backendUrl.replace(/\/$/, '') + '/api/search/image', {
-        method: 'POST', body: form, signal: ctrl.signal,
-      });
-      clearTimeout(tid);
+function cardHTML(p) {
+  return `<div class="card">
+    <div class="card-img">${p.e}</div>
+    <div class="card-body">
+      ${p.badge === "new" ? '<span class="card-badge badge-new">Новинка</span>' : p.badge === "sale" ? '<span class="card-badge badge-sale">Скидка</span>' : ''}
+      <div class="card-name">${p.name}</div>
+      <div class="card-price">
+        ${p.old ? `<div class="card-old">${fmt(p.old)}</div>` : ""}
+        <div class="card-cur">${fmt(p.price)}</div>
+        <div class="card-installment">от ${installment(p.price)}</div>
+      </div>
+      <div class="card-rate"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>${p.rate} (${p.rev.toLocaleString("ru")})</div>
+      <button class="btn btn-green card-add">В корзину</button>
+    </div>
+  </div>`;
+}
 
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${resp.status}`);
-      }
+function renderGrid(id, products) {
+  document.getElementById(id).innerHTML = products.map(cardHTML).join("");
+}
 
-      const data = await resp.json();
-      statusEl.textContent = '';
-      renderLabels(data.labels_raw, false);
-      const products = searchProducts(data.keywords_ru);
-      renderProducts(products);
-
-    } catch (e) {
-      // graceful degradation to mock
-      apiConnected = false;
-      setApiBar('error', `Ошибка API: ${e.message}. Переключились в мок-режим.`);
-      statusEl.textContent = '';
-      const kw = mockKeywordsFromFilename(selectedFile.name);
-      renderLabels(kw, true);
-      renderProducts(searchProducts(kw));
-    }
-
-  } else {
-    // ── Mock mode ──
-    statusEl.textContent = '🔍 Мок-поиск по имени файла…';
-    await new Promise(r => setTimeout(r, 600)); // tiny delay for UX
-    statusEl.textContent = '';
-    const kw = mockKeywordsFromFilename(selectedFile.name);
-    renderLabels(kw, true);
-    renderProducts(searchProducts(kw));
+// ── INIT API STATUS ──────────────────────────────────────────
+function initApiStatus() {
+  const bar = document.getElementById("api-bar");
+  const txt = document.getElementById("api-bar-text");
+  if (BACKEND_URL && !BACKEND_URL.includes("your-backend")) {
+    bar.className = "api-bar live";
+    txt.innerHTML = "<strong>Google Vision API подключён.</strong> Поиск по фото использует реальный ИИ-анализ изображений.";
   }
+}
 
-  searchBtn.disabled = false;
+// ── CATEGORIES ──────────────────────────────────────────────
+function renderCats() {
+  document.getElementById("cats-row").innerHTML = CATS.map(c =>
+    `<div class="cat" onclick="filterCat('${c.label}',this)">${c.e} ${c.label}</div>`
+  ).join("");
+}
+
+function filterCat(label, el) {
+  document.querySelectorAll(".cat").forEach(c => c.classList.remove("on"));
+  el.classList.add("on");
+  const c = CATS.find(x => x.label === label);
+  const res = search(c.kw);
+  renderGrid("pop-grid", res);
+  document.getElementById("pop-count").textContent = res.length + " товаров";
+}
+
+// ── TEXT SEARCH ──────────────────────────────────────────────
+document.getElementById("txt-input").addEventListener("keydown", e => { if (e.key === "Enter") handleTextSearch(); });
+function handleTextSearch() {
+  const q = document.getElementById("txt-input").value.trim();
+  if (!q) return;
+  showResults("Результаты по запросу «" + q + "»", [], search(q.toLowerCase().split(/\s+/)));
+}
+
+// ── FILE UPLOAD ──────────────────────────────────────────────
+let selectedFile = null;
+
+document.getElementById("file-input").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  selectedFile = f;
+  const r = new FileReader();
+  r.onload = ev => {
+    document.getElementById("preview-img").src = ev.target.result;
+    document.getElementById("preview-wrap").style.display = "block";
+    document.getElementById("dz-content").style.display = "none";
+    document.getElementById("search-btn").style.display = "flex";
+  };
+  r.readAsDataURL(f);
 });
 
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
+const dz = document.getElementById("dropzone");
+dz.addEventListener("dragover",  e => { e.preventDefault(); dz.classList.add("drag"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
+dz.addEventListener("drop", e => {
+  e.preventDefault(); dz.classList.remove("drag");
+  const f = e.dataTransfer.files[0];
+  if (!f?.type.startsWith("image/")) return;
+  const dt = new DataTransfer(); dt.items.add(f);
+  document.getElementById("file-input").files = dt.files;
+  document.getElementById("file-input").dispatchEvent(new Event("change"));
+});
+
+function removeImg(e) {
+  e.stopPropagation();
+  selectedFile = null;
+  document.getElementById("preview-wrap").style.display = "none";
+  document.getElementById("dz-content").style.display = "block";
+  document.getElementById("search-btn").style.display = "none";
+  document.getElementById("file-input").value = "";
+  hideResults();
+}
+
+// ── SEARCH ──────────────────────────────────────────────────
+const setLoad = (t, s) => {
+  document.getElementById("l-text").textContent = t;
+  document.getElementById("l-step").textContent = s;
+};
+
+async function runSearch() {
+  if (!selectedFile) return;
+  document.getElementById("results-area").classList.add("on");
+  document.getElementById("popular-section").style.display = "none";
+  document.getElementById("loading").style.display = "flex";
+  document.getElementById("results-content").style.display = "none";
+
+  const hasBackend = BACKEND_URL && !BACKEND_URL.includes("your-backend");
+
+  if (hasBackend) {
+    setLoad("Отправляем фото в Google Vision API...", "Ожидаем ответа...");
+    try {
+      const fd = new FormData();
+      fd.append("file", selectedFile);
+      const resp = await fetch(BACKEND_URL + "/api/search/image", { method:"POST", body:fd, signal: AbortSignal.timeout(15000) });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const data = await resp.json();
+      setLoad("Метки получены", "Ищем в каталоге...");
+      await new Promise(r => setTimeout(r, 500));
+      const kw = data.keywords_ru?.length ? data.keywords_ru : labelsToKw(data.labels_raw || []);
+      document.getElementById("loading").style.display = "none";
+      showResults("Найдено по фото", data.labels_raw || [], search(kw));
+    } catch(err) {
+      setLoad("Ошибка API, переключаемся на мок...", err.message);
+      await new Promise(r => setTimeout(r, 800));
+      const labels = mockLabels(selectedFile.name);
+      document.getElementById("loading").style.display = "none";
+      showResults("Найдено по фото (мок)", labels, search(labelsToKw(labels)));
+    }
+  } else {
+    const steps = [
+      [400,  "Анализируем изображение...",    "Мок-режим (config.js не настроен)"],
+      [900,  "Определяем категорию...",        "Сопоставляем с каталогом"],
+      [1400, "Ищем в каталоге...",            "Формируем результаты"],
+    ];
+    steps.forEach(([d,t,s]) => setTimeout(() => setLoad(t,s), d));
+    await new Promise(r => setTimeout(r, 1900));
+    const labels = mockLabels(selectedFile.name);
+    document.getElementById("loading").style.display = "none";
+    showResults("Найдено по фото (мок)", labels, search(labelsToKw(labels)));
+  }
+}
+
+function showResults(title, labels, products) {
+  document.getElementById("results-area").classList.add("on");
+  document.getElementById("popular-section").style.display = "none";
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("results-content").style.display = "block";
+  document.getElementById("r-title").textContent = title;
+
+  const lc = document.getElementById("r-labels");
+  lc.innerHTML = labels.length
+    ? '<span style="font-size:11px;color:#666;margin-right:4px">Распознано:</span>' + labels.map(l => `<span class="label-chip">${l}</span>`).join("")
+    : "";
+
+  const grid = document.getElementById("r-grid");
+  const empty = document.getElementById("r-empty");
+  if (products.length) {
+    grid.innerHTML = products.map(cardHTML).join("");
+    grid.style.display = "grid";
+    empty.style.display = "none";
+  } else {
+    grid.style.display = "none";
+    empty.style.display = "block";
+  }
+  setTimeout(() => document.getElementById("results-area").scrollIntoView({ behavior:"smooth", block:"start" }), 80);
+}
+
+function hideResults() {
+  document.getElementById("results-area").classList.remove("on");
+  document.getElementById("popular-section").style.display = "block";
+}
+
+// ── BOOT ────────────────────────────────────────────────────
+renderCats();
+renderGrid("pop-grid", PRODUCTS.slice(0, 10));
+document.getElementById("pop-count").textContent = "10 товаров";
 initApiStatus();
 </script>
-</body>
-</html>
+
+
+</body></html>
